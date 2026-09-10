@@ -31,7 +31,11 @@ export function PinPad({ zones }: { zones: { id: string; name: string }[] }) {
     if (result.ok) { router.refresh(); return; }
     setBusy(false);
     setPin('');
-    setError(result.message);
+    setError(
+      result.error === 'wrong_zone' && result.homeZoneName
+        ? t.counter.chooseZoneFirst(result.homeZoneName)
+        : result.message,
+    );
   }
 
   return (
@@ -49,7 +53,7 @@ export function PinPad({ zones }: { zones: { id: string; name: string }[] }) {
           <button
             key={zone.id}
             type="button"
-            className="chip"
+            className="chip chip-on-dark"
             aria-pressed={zoneId === zone.id}
             onClick={() => setZoneId(zone.id)}
           >

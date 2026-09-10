@@ -111,30 +111,59 @@ export async function requireSupervisor(): Promise<StaffSession> {
  * Checks a PIN against every active staff member on the event. PINs are short
  * and few, so this is a scan by design rather than a lookup by identifier —
  * there is no username at a counter.
+ *
+ * Desk staffers (`staffer` with a default zone) must select that zone on the
+ * PIN pad. Admin, pickup and supervisor may use either chip — they are not
+ * tied to one desk.
  */
-export async function signInWithPin(eventId: string, pin: string, zoneId?: string): Promise<StaffSession | null> {
-  const candidates = await db.staff.findMany({ where: { eventId, isActive: true } });
+export type PinSignInResult =
+  | { status: 'ok'; session: StaffSession }
+  | { status: 'bad_pin' }
+  | { status: 'wrong_zone'; homeZoneName: string };
+
+export async function signInWithPin(
+  eventId: string,
+  pin: string,
+  zoneId?: string,
+): Promise<PinSignInResult> {
+  const candidates = await db.staff.findMany({
+    where: { eventId, isActive: true },
+    include: { defaultZone: { select: { id: true, name: true } } },
+  });
 
   for (const member of candidates) {
-    if (await verifyPin(pin, member.pinHash)) {
-      const session: StaffSession = {
+    if (!(await verifyPin(pin, member.pinHash))) continue;
+
+    const deskLocked = member.role === 'staffer' && member.defaultZoneId;
+    if (deskLocked && zoneId && zoneId !== member.defaultZoneId) {
+      log.warn('pin zone mismatch', {
         staffId: member.id,
-        role: member.role,
-        zoneId: zoneId ?? member.defaultZoneId ?? null,
-        expiresAt: Date.now() + SHIFT_HOURS * 3_600_000,
-      };
-      const jar = await cookies();
-      jar.set(COOKIE, encode(session), {
-        httpOnly: true, sameSite: 'lax', path: '/',
-        secure: process.env.NODE_ENV === 'production',
-        maxAge: SHIFT_HOURS * 3600,
+        selectedZoneId: zoneId,
+        homeZoneId: member.defaultZoneId,
       });
-      log.info('staff signed in', { staffId: member.id, role: member.role, zoneId: session.zoneId });
-      return session;
+      return {
+        status: 'wrong_zone',
+        homeZoneName: member.defaultZone?.name ?? 'your zone',
+      };
     }
+
+    const session: StaffSession = {
+      staffId: member.id,
+      role: member.role,
+      zoneId: zoneId ?? member.defaultZoneId ?? null,
+      expiresAt: Date.now() + SHIFT_HOURS * 3_600_000,
+    };
+    const jar = await cookies();
+    jar.set(COOKIE, encode(session), {
+      httpOnly: true, sameSite: 'lax', path: '/',
+      secure: process.env.NODE_ENV === 'production',
+      maxAge: SHIFT_HOURS * 3600,
+    });
+    log.info('staff signed in', { staffId: member.id, role: member.role, zoneId: session.zoneId });
+    return { status: 'ok', session };
   }
   log.warn('pin rejected', { eventId });
-  return null;
+  return { status: 'bad_pin' };
 }
 
 export async function signOut(): Promise<void> {

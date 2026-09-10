@@ -44,9 +44,15 @@ function isUniqueViolationOn(error: unknown, column: string): boolean {
  * safe to replay, so a staffer who taps twice, or a queued write that lands
  * late, produces one session rather than two.
  */
-export async function startSessions(input: StartSessionsInput, staffId: string): Promise<StartedSession[]> {
+export async function startSessions(
+  input: StartSessionsInput,
+  staffId: string,
+  staffZoneId: string | null,
+): Promise<StartedSession[]> {
   const event = await currentEvent();
   const started: StartedSession[] = [];
+
+  if (!staffZoneId) throw new Error('ZONE_REQUIRED');
 
   const registration = await db.registration.findUnique({
     where: { id: input.registrationId },
@@ -60,6 +66,7 @@ export async function startSessions(input: StartSessionsInput, staffId: string):
       select: { id: true, minutes: true, zone: { select: { id: true, name: true, supervisionMode: true } } },
     });
     if (!pkg) throw new Error('UNKNOWN_PACKAGE');
+    if (pkg.zone.id !== staffZoneId) throw new Error('WRONG_ZONE');
 
     const child = await db.child.findUnique({ where: { id: entry.childId } });
     if (!child || child.registrationId !== registration.id) throw new Error('CHILD_NOT_IN_REGISTRATION');

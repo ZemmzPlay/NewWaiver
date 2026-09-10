@@ -11,8 +11,11 @@ import { SessionHeadline, panelClass, type WireRow } from './SessionRow';
  * Who is inside, in the order they leave. Check-out honours supervision mode:
  * in an accompanied zone the guardian is already standing there, so a tap is
  * enough; in a drop-off zone the returning adult produces the code.
+ *
+ * `pane` is for the admin split view — fills one side of the board without the
+ * single-column page max-width.
  */
-export function ZoneBoard({ zoneId, zoneName, supervisionMode, initialRows, serverNowIso }: {
+export function ZoneBoard({ zoneId, zoneName, supervisionMode, initialRows, serverNowIso, pane = false }: {
   zoneId: string;
   zoneName: string;
   supervisionMode: 'accompanied' | 'drop_off';
@@ -21,6 +24,7 @@ export function ZoneBoard({ zoneId, zoneName, supervisionMode, initialRows, serv
    *  produced a different first frame on the server and the client, which React
    *  reports as a hydration mismatch and repaints. */
   serverNowIso: string;
+  pane?: boolean;
 }) {
   const { t } = useLocale();
   const router = useRouter();
@@ -69,10 +73,15 @@ export function ZoneBoard({ zoneId, zoneName, supervisionMode, initialRows, serv
   }
 
   return (
-    <div className="p-6 max-w-[--container-page] mx-auto flex flex-col gap-4">
-      <div className="flex items-baseline justify-between">
-        <h1 className="display" style={{ fontSize: 'var(--font-size-3xl)' }}>{zoneName}</h1>
-        <span className="eyebrow">{t.counter.inside(rows.length)}</span>
+    <div className={pane
+      ? 'p-5 flex flex-col gap-4 min-w-0 h-full'
+      : 'p-6 max-w-[--container-page] mx-auto flex flex-col gap-4'}
+    >
+      <div className="flex items-baseline justify-between gap-3">
+        <h1 className="display" style={{ fontSize: pane ? 'var(--font-size-2xl)' : 'var(--font-size-3xl)' }}>
+          {zoneName}
+        </h1>
+        <span className="eyebrow shrink-0">{t.counter.inside(rows.length)}</span>
       </div>
 
       {error ? <div className="notice notice-danger" role="alert">{error}</div> : null}

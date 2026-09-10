@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import type { CSSProperties, ReactNode } from 'react';
 
 /**
@@ -8,18 +9,23 @@ import type { CSSProperties, ReactNode } from 'react';
 export type Colourway = 'indigo' | 'orange' | 'pink' | 'sky' | 'white' | 'yellow';
 export type ShapeName = 'clover' | 'star' | 'arch' | 'asterisk' | 'sunburst';
 
+/**
+ * Site wordmark. Always links to the guardian home page (`/`) so a tap on the
+ * navbar logo never leaves the visitor stranded mid-flow.
+ */
 export function Wordmark({ colourway = 'indigo', height = 28, className = '' }: {
   colourway?: Colourway; height?: number; className?: string;
 }) {
   return (
-    // eslint-disable-next-line @next/next/no-img-element
-    <img
-      src={`/logo/logo-${colourway}.svg`}
-      alt="theCarnival.ae"
-      height={height}
-      style={{ height, width: 'auto', display: 'block' }}
-      className={className}
-    />
+    <Link href="/" className={className} aria-label="theCarnival.ae home">
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={`/logo/logo-${colourway}.svg`}
+        alt=""
+        height={height}
+        style={{ height, width: 'auto', display: 'block' }}
+      />
+    </Link>
   );
 }
 

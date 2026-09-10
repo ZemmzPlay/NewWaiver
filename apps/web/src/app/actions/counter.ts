@@ -23,6 +23,8 @@ const MESSAGES: Record<string, string> = {
   REGISTRATION_NOT_FOUND: 'That family is no longer on file. Search again.',
   CHILD_NOT_IN_REGISTRATION: 'That child is not on this registration. Search again.',
   UNKNOWN_PACKAGE: 'That zone or length is no longer available. Pick another.',
+  WRONG_ZONE: 'That child is registered for a different zone. Check them in at the right counter.',
+  ZONE_REQUIRED: 'Choose a zone on the PIN pad before checking anyone in.',
   CHILD_ALREADY_INSIDE: 'That child already has a session running. Check them out first.',
   OVERRIDE_REQUIRED: 'Releasing to someone else needs a supervisor PIN.',
   BAD_SUPERVISOR_PIN: 'That is not a supervisor PIN.',
@@ -56,7 +58,7 @@ function plain(error: unknown): string {
 
 export type ActionResult<T = undefined> =
   | ({ ok: true } & (T extends undefined ? { data?: undefined } : { data: T }))
-  | { ok: false; message: string };
+  | { ok: false; message: string; error?: 'wrong_zone'; homeZoneName?: string };
 
 export async function signInAction(pin: string, zoneId?: string): Promise<ActionResult> {
   const parsed = staffLoginInput.safeParse({ pin, zoneId });
@@ -66,8 +68,20 @@ export async function signInAction(pin: string, zoneId?: string): Promise<Action
   if (isLockedOut(key)) return { ok: false, message: 'Too many wrong PINs. Wait a minute and try again.' };
 
   const event = await currentEvent();
-  const session = await signInWithPin(event.id, parsed.data.pin, parsed.data.zoneId);
-  if (!session) { recordFailure(key); return { ok: false, message: 'That PIN was not recognised.' }; }
+  const result = await signInWithPin(event.id, parsed.data.pin, parsed.data.zoneId);
+  if (result.status === 'wrong_zone') {
+    // Wrong chip, not a wrong PIN — do not burn lockout attempts.
+    return {
+      ok: false,
+      message: `Select ${result.homeZoneName} first, then enter your PIN.`,
+      error: 'wrong_zone',
+      homeZoneName: result.homeZoneName,
+    };
+  }
+  if (result.status !== 'ok') {
+    recordFailure(key);
+    return { ok: false, message: 'That PIN was not recognised.' };
+  }
   recordSuccess(key);
   return { ok: true } as ActionResult;
 }
@@ -80,7 +94,7 @@ export async function startCheckInAction(input: unknown): Promise<ActionResult<S
   try {
     const staff = await requireStaff();
     const parsed = startSessionsInput.parse(input);
-    const started = await startSessions(parsed, staff.staffId);
+    const started = await startSessions(parsed, staff.staffId, staff.zoneId);
     revalidatePath('/counter', 'layout');
     return { ok: true, data: started };
   } catch (error) {

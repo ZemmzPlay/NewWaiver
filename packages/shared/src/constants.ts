@@ -7,7 +7,7 @@
 export const WARN_LEAD_MINUTES = 5;
 
 /** A session becomes `overdue` this long after it ends. PRD s5 [ASSUMPTION]. */
-export const OVERDUE_GRACE_MINUTES = 10;
+export const OVERDUE_GRACE_MINUTES = 5;
 
 /** Pickup card escalates to red after this many failed attempts. PRD s5. */
 export const PICKUP_ESCALATE_ATTEMPTS = 3;

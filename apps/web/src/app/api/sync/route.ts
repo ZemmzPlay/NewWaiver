@@ -19,8 +19,11 @@ const log = createLogger('api:sync');
  */
 export async function POST(request: Request) {
   let staffId: string;
+  let zoneId: string | null;
   try {
-    staffId = (await requireStaff()).staffId;
+    const staff = await requireStaff();
+    staffId = staff.staffId;
+    zoneId = staff.zoneId;
   } catch {
     return NextResponse.json({ error: 'unauthorised' }, { status: 401 });
   }
@@ -33,7 +36,7 @@ export async function POST(request: Request) {
 
   for (const batch of parsed.data.sessions) {
     try {
-      const started = await startSessions(batch, staffId);
+      const started = await startSessions(batch, staffId, zoneId);
       applied.push(...started.map((session) => session.sessionId));
     } catch (error) {
       failed.push({

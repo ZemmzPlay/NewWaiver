@@ -22,6 +22,8 @@ describe('startSessions — replay and one-live-per-child conflict handling', ()
   let registrationId: string;
   let childId: string;
   let packageId: string;
+  let zoneId: string;
+  let otherPackageId: string;
   let staffId: string;
 
   beforeAll(async () => {
@@ -38,12 +40,21 @@ describe('startSessions — replay and one-live-per-child conflict handling', ()
     eventId = event.id;
 
     const zone = await db.zone.create({
-      data: { eventId, name: 'Test Zone', supervisionMode: 'accompanied' },
+      data: { eventId, name: 'Test Zone', supervisionMode: 'drop_off' },
     });
+    zoneId = zone.id;
     const pkg = await db.package.create({
       data: { zoneId: zone.id, label: '15 minutes', minutes: 15 },
     });
     packageId = pkg.id;
+
+    const otherZone = await db.zone.create({
+      data: { eventId, name: 'Other Zone', supervisionMode: 'drop_off' },
+    });
+    const otherPkg = await db.package.create({
+      data: { zoneId: otherZone.id, label: '15 minutes', minutes: 15 },
+    });
+    otherPackageId = otherPkg.id;
 
     const guardian = await db.guardian.create({
       data: {
@@ -86,12 +97,14 @@ describe('startSessions — replay and one-live-per-child conflict handling', ()
     const first = await startSessions(
       { registrationId, entries: [{ childId, packageId, clientUuid }] },
       staffId,
+      zoneId,
     );
     expect(first[0]!.alreadyExisted).toBe(false);
 
     const second = await startSessions(
       { registrationId, entries: [{ childId, packageId, clientUuid }] },
       staffId,
+      zoneId,
     );
     expect(second[0]!.alreadyExisted).toBe(true);
     expect(second[0]!.sessionId).toBe(first[0]!.sessionId);
@@ -103,7 +116,41 @@ describe('startSessions — replay and one-live-per-child conflict handling', ()
   it('throws CHILD_ALREADY_INSIDE for a genuinely new check-in while one is already live', async () => {
     // The previous test already left this child with a live session.
     await expect(
-      startSessions({ registrationId, entries: [{ childId, packageId, clientUuid: randomUUID() }] }, staffId),
+      startSessions(
+        { registrationId, entries: [{ childId, packageId, clientUuid: randomUUID() }] },
+        staffId,
+        zoneId,
+      ),
     ).rejects.toThrow('CHILD_ALREADY_INSIDE');
+  });
+
+  it('rejects a package from a different zone than the staff desk', async () => {
+    const otherChild = await db.child.create({
+      data: {
+        registrationId, fullName: 'Other Child', ageYears: 6,
+        childCode: `TC-${randomUUID()}`, seq: 2,
+      },
+    });
+    await expect(
+      startSessions(
+        {
+          registrationId,
+          entries: [{ childId: otherChild.id, packageId: otherPackageId, clientUuid: randomUUID() }],
+        },
+        staffId,
+        zoneId,
+      ),
+    ).rejects.toThrow('WRONG_ZONE');
+    await db.child.delete({ where: { id: otherChild.id } });
+  });
+
+  it('rejects check-in when the staff desk has no zone', async () => {
+    await expect(
+      startSessions(
+        { registrationId, entries: [{ childId, packageId, clientUuid: randomUUID() }] },
+        staffId,
+        null,
+      ),
+    ).rejects.toThrow('ZONE_REQUIRED');
   });
 });

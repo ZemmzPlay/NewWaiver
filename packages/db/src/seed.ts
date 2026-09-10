@@ -27,7 +27,7 @@ const ZONES = [
   {
     name: 'Soft Play',
     nameAr: 'اللعب الآمن',
-    supervisionMode: 'accompanied' as const,
+    supervisionMode: 'drop_off' as const,
     capacity: 40,
     // [OPEN] PRD s2 - age limits per zone were never supplied, so nothing gates.
     minAge: null,

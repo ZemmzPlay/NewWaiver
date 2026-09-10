@@ -33,7 +33,7 @@ export async function advanceSessions(): Promise<TransitionCounts> {
     data: { status: 'expired' },
   });
 
-  // PRD s5 [ASSUMPTION]: ends_at + 10 min. The grace lives in shared so the
+  // PRD s5 [ASSUMPTION]: ends_at + grace (OVERDUE_GRACE_MINUTES). Shared so the
   // status page, the board and the worker all mean the same thing by "overdue".
   const overdue = await db.session.updateMany({
     where: { status: 'expired', endsAt: { lte: new Date(now.getTime() - OVERDUE_GRACE_MINUTES * 60_000) } },

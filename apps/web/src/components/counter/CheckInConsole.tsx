@@ -66,26 +66,56 @@ export function CheckInConsole({ zone, zones }: { zone: ZoneOption; zones: ZoneO
     const response = await fetch(`/api/registrations/${code}`, { cache: 'no-store' });
     if (!response.ok) { setError(t.errors.generic); return; }
     const card = (await response.json()) as FamilyCard;
-    setFamily(card);
-    setHits([]);
-    setQuery('');
-    // Pre-tick only the children who picked *this* zone online, at the length
-    // they picked. A child who chose Soft Play appears at the Bouncy Castles
-    // counter unticked: the staffer can still send them in, but it takes a
-    // deliberate tap rather than a missed one.
-    const defaults: Record<string, string> = {};
+
     const requestedZone: Record<string, string | null> = {};
+    const defaults: Record<string, string> = {};
+    const otherZoneNames = new Set<string>();
+    let eligibleCount = 0;
+    let liveInThisZone = 0;
+
     for (const child of card.children) {
-      if (child.liveSession) continue;
       const owner = zones.find((z) => z.packages.some((p) => p.id === child.requestedPackageId));
       requestedZone[child.id] = owner?.name ?? null;
+      if (owner && owner.id !== zone.id) otherZoneNames.add(owner.name);
+
+      if (child.liveSession) {
+        if (child.liveSession.zoneName === zone.name) liveInThisZone += 1;
+        continue;
+      }
       if (owner?.id !== zone.id) continue;
+      eligibleCount += 1;
       const requested = owner.packages.find((p) => p.id === child.requestedPackageId);
       const match = zone.packages.find((p) => p.minutes === requested?.minutes) ?? zone.packages[0];
       if (match) defaults[child.id] = match.id;
     }
+
+    // No child for this desk and nobody already inside here — send them to the
+    // right counter instead of opening an empty check-in card.
+    if (eligibleCount === 0 && liveInThisZone === 0) {
+      setFamily(null);
+      setHits([]);
+      setQuery('');
+      setRequestedZones({});
+      setSelected({});
+      const named = [...otherZoneNames];
+      setError(
+        named.length
+          ? t.counter.wrongZone(named.join(' / '), zone.name)
+          : t.counter.wrongZoneUnknown(zone.name),
+      );
+      return;
+    }
+
+    setFamily(card);
+    setHits([]);
+    setQuery('');
     setRequestedZones(requestedZone);
     setSelected(defaults);
+  }
+
+  function childBelongsToDesk(requestedPackageId: string | null): boolean {
+    if (!requestedPackageId) return false;
+    return zone.packages.some((p) => p.id === requestedPackageId);
   }
 
   function reset() {
@@ -96,7 +126,7 @@ export function CheckInConsole({ zone, zones }: { zone: ZoneOption; zones: ZoneO
   async function start() {
     if (!family) return;
     const entries = Object.entries(selected)
-      .filter(([, packageId]) => Boolean(packageId))
+      .filter(([, packageId]) => Boolean(packageId) && zone.packages.some((p) => p.id === packageId))
       .map(([childId, packageId]) => ({
         childId, packageId, stubRef, clientUuid: crypto.randomUUID(),
       }));
@@ -232,29 +262,41 @@ export function CheckInConsole({ zone, zones }: { zone: ZoneOption; zones: ZoneO
           <div className="eyebrow mb-3">{t.counter.whoIsGoingIn}</div>
           <div className="flex flex-col gap-3">
             {available.map((child) => {
+              const belongsHere = childBelongsToDesk(child.requestedPackageId);
               const active = Boolean(selected[child.id]);
+              const otherZone = requestedZones[child.id];
               return (
                 <div
                   key={child.id}
-                  className="card"
-                  style={{ borderWidth: '2px', borderColor: active ? 'var(--carnival-indigo)' : undefined }}
+                  className={`card ${belongsHere ? '' : 'opacity-70'}`}
+                  style={{
+                    borderWidth: '2px',
+                    borderColor: active ? 'var(--carnival-indigo)' : undefined,
+                  }}
                 >
-                  <label className="flex items-center gap-4 cursor-pointer">
+                  <label className={`flex items-center gap-4 ${belongsHere ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
                     <input
                       type="checkbox"
                       checked={active}
-                      onChange={(event) => setSelected((prev) => {
-                        const next = { ...prev };
-                        if (event.target.checked) next[child.id] = zone.packages[0]?.id ?? '';
-                        else delete next[child.id];
-                        return next;
-                      })}
+                      disabled={!belongsHere}
+                      onChange={(event) => {
+                        if (!belongsHere) return;
+                        setSelected((prev) => {
+                          const next = { ...prev };
+                          if (event.target.checked) next[child.id] = zone.packages[0]?.id ?? '';
+                          else delete next[child.id];
+                          return next;
+                        });
+                      }}
                       style={{ width: 'var(--space-6)', height: 'var(--space-6)', accentColor: 'var(--carnival-indigo)' }}
                     />
                     <span className="headline" style={{ fontSize: 'var(--font-size-xl)' }}>{child.fullName}</span>
                     <span className="state state-active">{t.counter.age(child.ageYears)}</span>
-                    {requestedZones[child.id] && requestedZones[child.id] !== zone.name ? (
-                      <span className="state state-warned">{t.counter.picked(requestedZones[child.id]!)}</span>
+                    {!belongsHere && otherZone ? (
+                      <span className="state state-warned">{t.counter.wrongZoneChild(otherZone)}</span>
+                    ) : null}
+                    {belongsHere && otherZone && otherZone !== zone.name ? (
+                      <span className="state state-warned">{t.counter.picked(otherZone)}</span>
                     ) : null}
                   </label>
 
@@ -265,7 +307,7 @@ export function CheckInConsole({ zone, zones }: { zone: ZoneOption; zones: ZoneO
                     </div>
                   ) : null}
 
-                  {active ? (
+                  {active && belongsHere ? (
                     <div className="flex flex-wrap gap-2 mt-4">
                       {zone.packages.map((pkg) => (
                         <button

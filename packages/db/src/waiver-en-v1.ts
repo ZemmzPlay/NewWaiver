@@ -9,9 +9,6 @@
  *
  * Hard rule 7: this text is immutable once seeded. Changing a word means
  * publishing version 2, never editing version 1.
- *
- * Placeholders in {{double braces}} must be replaced with the real legal entity
- * details before the event.
  */
 
 export const WAIVER_EN_V1_TITLE = 'Play zone waiver and consent';
@@ -19,7 +16,7 @@ export const WAIVER_EN_V1_TITLE = 'Play zone waiver and consent';
 export const WAIVER_EN_V1_BODY = `
 ## 1. Who this agreement is between
 
-This agreement is between **{{ZAWAYA_LEGAL_ENTITY}}** (trade licence **{{LICENCE_NUMBER}}**), the operator of the play zones, and you, the parent or legal guardian signing below.
+This agreement is between **Zawaya Gaming FZ LLC** (trade licence **B.L. 1007/25**), the operator of the play zones, and you, the parent or legal guardian signing below.
 
 It covers the **Soft Play** and **Bouncy Castles** zones operated at **Middle East Film & Comic Con, ADNEC Abu Dhabi**, on the dates of the event.
 
@@ -38,9 +35,7 @@ You accept these risks on your child's behalf.
 
 ## 4. Supervision
 
-**Soft Play is accompanied.** You stay inside the zone and remain responsible for directly supervising your child at all times. Our staff manage the environment and the rules; they do not replace you.
-
-**Bouncy Castles is drop-off.** You may leave the zone. By doing so you confirm you will stay contactable on the mobile number you gave us, remain on the event premises, and return before the session end time printed on your child's sticker.
+**Soft Play and Bouncy Castles are both drop-off.** You may leave the zone. By doing so you confirm you will stay contactable on the mobile number you gave us, remain on the event premises, and return before the session end time printed on your child's sticker.
 
 **In both zones: no child leaves unaccompanied.** A child is released only to you, or to another adult you have authorised, verified against your registration code.
 
@@ -72,7 +67,7 @@ Our team photographs and films the play zones for our own marketing, and your ch
 
 ## 10. How we handle your data
 
-**{{ZAWAYA_LEGAL_ENTITY}}** is the data controller. Contact: **{{PRIVACY_CONTACT_EMAIL}}**, **{{PRIVACY_CONTACT_ADDRESS}}**.
+**Zawaya Gaming FZ LLC** is the data controller. Contact: **hello@zemmz.com**, **Yas Creative Hub, Office: 0176, TwoFour 54, Yas Island, Abu Dhabi, 769693, Abu Dhabi**.
 
 **What we collect:** your name, your relation to the child, your mobile number and email address; and each child's name, age, and any medical note you give us.
 

@@ -249,6 +249,25 @@ textarea.field-control { border-radius: var(--radius-lg); line-height: var(--lin
   border-color: var(--carnival-indigo);
   color: var(--carnival-white);
 }
+
+/* Zone chips on the indigo PIN pad — unselected must read as “not chosen”. */
+.chip-on-dark {
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.45);
+  color: var(--carnival-white);
+}
+.chip-on-dark:hover {
+  border-color: var(--carnival-yellow);
+  background: rgba(255, 255, 255, 0.2);
+}
+.chip-on-dark[aria-pressed='true'],
+.chip-on-dark[data-selected='true'] {
+  background: var(--carnival-white);
+  border-color: var(--carnival-yellow);
+  color: var(--carnival-indigo);
+  box-shadow: 0 0 0 2px var(--carnival-yellow);
+}
+
 .chip-age { min-width: var(--phone-tap-min); padding: var(--space-2); font-variant-numeric: tabular-nums; }
 
 /* The circular + that adds another child. */
@@ -569,3 +588,38 @@ textarea.field-control { border-radius: var(--radius-lg); line-height: var(--lin
 
 /* The tile motif is centred, so it needs no mirroring; the shape rotation does. */
 [dir='rtl'] .tile:hover .tile-shape { rotate: -15deg; }
+
+/* ---------------------------------------------------- admin dual zone board */
+
+.board-split {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  min-height: calc(100dvh - 5.5rem);
+}
+
+.board-split-pane {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 0;
+}
+
+.board-split-divider {
+  flex: 0 0 auto;
+  height: 2px;
+  background: var(--indigo-100);
+  margin: 0 var(--space-5);
+}
+
+@media (min-width: 960px) {
+  .board-split {
+    flex-direction: row;
+  }
+
+  .board-split-divider {
+    width: 2px;
+    height: auto;
+    align-self: stretch;
+    margin: var(--space-5) 0;
+  }
+}

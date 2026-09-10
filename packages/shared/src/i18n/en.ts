@@ -158,6 +158,8 @@ export const en = {
     registered: (name: string) => `You are registered, ${name}`,
     added: 'Added to your family',
     yourCode: 'Your code',
+    copyCode: 'Copy',
+    copied: 'Copied',
     showAtCounter:
       'Show this at the counter. A staff member will start the clock and print a sticker for each child.',
     doThisNow: 'Do this now',
@@ -228,10 +230,12 @@ export const en = {
     signedIn: (role: string) => `Signed in · ${role}`,
     checkIn: 'Check in',
     board: 'Zone board',
+    allZones: 'All zones',
     pickup: 'Pickup queue',
     clear: 'Clear',
     go: 'Go',
     pinRejected: 'That PIN was not recognised.',
+    chooseZoneFirst: (zone: string) => `Select ${zone} first, then enter your PIN.`,
     findFamily: 'Find a family',
     findPlaceholder: 'Name, mobile, or code',
     findHint: 'Type any part of a name, the mobile number, or the six-digit code.',
@@ -253,6 +257,11 @@ export const en = {
     whoIsGoingIn: 'Who is going in?',
     age: (n: number) => `Age ${n}`,
     picked: (zone: string) => `Picked ${zone}`,
+    wrongZone: (theirZone: string, thisZone: string) =>
+      `This code is for ${theirZone}. You cannot check these people in at ${thisZone}.`,
+    wrongZoneUnknown: (thisZone: string) =>
+      `This registration is not for ${thisZone}. You cannot check these people in here.`,
+    wrongZoneChild: (zone: string) => `Registered for ${zone} — check in at that counter.`,
     medicalNote: 'Medical note',
     stubRef: 'Ticket stub reference (optional)',
     stubPlaceholder: 'From the POS receipt',

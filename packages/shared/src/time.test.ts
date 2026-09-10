@@ -11,7 +11,7 @@ describe('display in Asia/Dubai, store in UTC', () => {
     const s = sessionSchedule(start, 30);
     expect(s.endsAt.toISOString()).toBe('2026-09-11T11:30:00.000Z');
     expect(s.warnAt.toISOString()).toBe('2026-09-11T11:25:00.000Z');
-    expect(s.overdueAt.toISOString()).toBe('2026-09-11T11:40:00.000Z');
+    expect(s.overdueAt.toISOString()).toBe('2026-09-11T11:35:00.000Z');
   });
 
   it('counts down and then up', () => {
