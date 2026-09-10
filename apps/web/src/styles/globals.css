@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@import "./tokens/fonts.css";
+@import "./tokens/colors.css";
+@import "./tokens/typography.css";
+@import "./tokens/spacing.css";
+@import "./tokens/radius.css";
+@import "./tokens/elevation.css";
+@import "./tokens/motion.css";
+@import "./tokens/app.css";
+@import "./carnival.css";
+
+/**
+ * Hard rule 1: no hardcoded design values. Tailwind's utilities are re-pointed
+ * at the design system's custom properties here, so `bg-indigo` is the brand's
+ * indigo by reference and cannot drift from it.
+ */
+@theme inline {
+  --color-indigo: var(--carnival-indigo);
+  --color-indigo-900: var(--indigo-900);
+  --color-indigo-700: var(--indigo-700);
+  --color-indigo-300: var(--indigo-300);
+  --color-indigo-100: var(--indigo-100);
+  --color-sky: var(--carnival-sky);
+  --color-sky-700: var(--sky-700);
+  --color-sky-300: var(--sky-300);
+  --color-sky-100: var(--sky-100);
+  --color-orange: var(--carnival-orange);
+  --color-orange-700: var(--orange-700);
+  --color-orange-300: var(--orange-300);
+  --color-orange-100: var(--orange-100);
+  --color-yellow: var(--carnival-yellow);
+  --color-yellow-700: var(--yellow-700);
+  --color-yellow-300: var(--yellow-300);
+  --color-yellow-100: var(--yellow-100);
+  --color-pink: var(--carnival-pink);
+  --color-pink-300: var(--pink-300);
+  --color-pink-100: var(--pink-100);
+  --color-white: var(--carnival-white);
+  --color-ink-900: var(--ink-900);
+  --color-ink-700: var(--ink-700);
+  --color-ink-500: var(--ink-500);
+  --color-ink-300: var(--ink-300);
+  --color-ink-200: var(--ink-200);
+  --color-ink-100: var(--ink-100);
+  --color-ink-50: var(--ink-50);
+
+  --color-page: var(--surface-page);
+  --color-page-alt: var(--surface-page-alt);
+  --color-counter: var(--surface-counter);
+  --color-heading: var(--text-heading);
+  --color-body: var(--text-body);
+  --color-muted: var(--text-muted);
+  --color-danger: var(--text-danger);
+  --color-edge: var(--border-subtle);
+
+  --font-display: var(--font-display);
+  --font-brand: var(--font-brand);
+  --font-ui: var(--font-ui);
+  --font-body: var(--font-body);
+
+  --text-3xs: var(--font-size-3xs);
+  --text-2xs: var(--font-size-2xs);
+  --text-xs: var(--font-size-xs);
+  --text-sm: var(--font-size-sm);
+  --text-md: var(--font-size-md);
+  --text-lg: var(--font-size-lg);
+  --text-xl: var(--font-size-xl);
+  --text-2xl: var(--font-size-2xl);
+  --text-3xl: var(--font-size-3xl);
+  --text-4xl: var(--font-size-4xl);
+  --text-5xl: var(--font-size-5xl);
+  --text-6xl: var(--font-size-6xl);
+
+  --tracking-caps: var(--tracking-caps);
+  --tracking-wide: var(--tracking-wide);
+  --tracking-tight: var(--tracking-tight);
+
+  --leading-tight: var(--line-tight);
+  --leading-snug: var(--line-snug);
+  --leading-normal: var(--line-normal);
+  --leading-relaxed: var(--line-relaxed);
+
+  --radius-sm: var(--radius-sm);
+  --radius-md: var(--radius-md);
+  --radius-lg: var(--radius-lg);
+  --radius-xl: var(--radius-xl);
+  --radius-pill: var(--radius-pill);
+  --radius-tile: var(--radius-tile);
+
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-block: var(--shadow-block);
+  --shadow-block-yellow: var(--shadow-block-yellow);
+
+  --ease-standard: var(--ease-standard);
+  --ease-bounce: var(--ease-bounce);
+
+  /* The spacing scale is 4/8/12/16/24/32/48/64/96/128, so a 4px step reaches
+     every value in it: p-1 p-2 p-3 p-4 p-6 p-8 p-12 p-16 p-24 p-32. */
+  --spacing: 4px;
+
+  --container-narrow: var(--content-narrow);
+  --container-page: var(--content-max);
+}

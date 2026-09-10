@@ -1,0 +1,30 @@
+{
+  "name": "carnival-waiver",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "concurrently -n web,worker -c blue,green \"npm run dev --workspace=@carnival/web\" \"npm run dev --workspace=@carnival/worker\"",
+    "dev:web": "npm run dev --workspace=@carnival/web",
+    "dev:worker": "npm run dev --workspace=@carnival/worker",
+    "dev:print": "npm run dev --workspace=@carnival/print-agent",
+    "build": "npm run build --workspace=@carnival/web",
+    "start": "npm run start --workspace=@carnival/web",
+    "db:generate": "npm run generate --workspace=@carnival/db",
+    "db:migrate": "npm run migrate --workspace=@carnival/db",
+    "db:seed": "npm run seed --workspace=@carnival/db",
+    "db:reset": "npm run reset --workspace=@carnival/db",
+    "test": "vitest run",
+    "typecheck": "npm run typecheck --workspaces --if-present"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "concurrently": "^9.1.0",
+    "dotenv": "^16.4.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.6.3",
+    "vitest": "^2.1.5"
+  }
+}

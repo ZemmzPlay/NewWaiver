@@ -1,0 +1,47 @@
+:root{
+--font-display:"Monigue","Noto Kufi Arabic","Google Sans",system-ui,sans-serif;
+--font-brand:"Google Sans","Cairo",system-ui,sans-serif;
+--font-ui:"Instrument Sans","Cairo",system-ui,sans-serif;
+--font-body:"Manrope","Cairo",system-ui,sans-serif;
+
+--font-size-3xs:11px;
+--font-size-2xs:12px;
+--font-size-xs:13px;
+--font-size-sm:15px;
+--font-size-md:17px;
+--font-size-lg:20px;
+--font-size-xl:24px;
+--font-size-2xl:32px;
+--font-size-3xl:44px;
+--font-size-4xl:60px;
+--font-size-5xl:84px;
+--font-size-6xl:120px;
+
+--line-tight:0.92; /* @kind other */
+--line-snug:1.12; /* @kind other */
+--line-normal:1.45; /* @kind other */
+--line-relaxed:1.65; /* @kind other */
+
+--weight-regular:400; /* @kind other */
+--weight-medium:500; /* @kind other */
+--weight-semibold:600; /* @kind other */
+--weight-bold:700; /* @kind other */
+
+--tracking-display:0.01em;
+--tracking-tight:-0.02em;
+--tracking-normal:0em;
+--tracking-wide:0.06em;
+--tracking-caps:0.12em;
+
+/* Semantic type roles */
+--type-hero-family:var(--font-display);
+--type-hero-size:var(--font-size-6xl);
+--type-hero-line:var(--line-tight);
+--type-headline-family:var(--font-brand);
+--type-headline-weight:var(--weight-bold);
+--type-body-family:var(--font-body);
+--type-body-size:var(--font-size-md);
+--type-body-line:var(--line-relaxed);
+--type-ui-family:var(--font-ui);
+--type-label-tracking:var(--tracking-caps);
+}

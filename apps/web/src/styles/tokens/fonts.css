@@ -1,0 +1,40 @@
+/**
+ * Font faces for the app. Sources live in apps/web/public/fonts.
+ *
+ * Monigue is the wordmark face and the display face. The cut carries a full
+ * Latin set — 374 mapped glyphs, digits, colon, upper and lower case — so the
+ * fallback that used to happen mid-string on any time or code is gone. Shipped
+ * as woff2 (23 KB against 41 KB for the otf).
+ *
+ * One thing it does not have: tabular figures. Its digits are proportional and
+ * there is no `tnum` feature in its GSUB, so a "1" sets at 267 units where a
+ * "5" sets at 407 — a 14% of an em spread. That does not matter for a headline
+ * or a code, and it matters a great deal for a number that redraws every
+ * second. See the note on `.display-num` in carnival.css.
+ */
+@font-face{font-family:"Monigue";src:url("/fonts/Monigue-Regular.woff2") format("woff2");font-weight:400;font-style:normal;font-display:swap}
+@font-face{font-family:"Google Sans";src:url("/fonts/GoogleSans-Variable.ttf") format("truetype-variations");font-weight:400 700;font-style:normal;font-display:swap}
+@font-face{font-family:"Instrument Sans";src:url("/fonts/InstrumentSans-Variable.ttf") format("truetype-variations");font-weight:400 700;font-style:normal;font-display:swap}
+@font-face{font-family:"Manrope";src:url("/fonts/Manrope-Variable.ttf") format("truetype-variations");font-weight:200 800;font-style:normal;font-display:swap}
+
+/**
+ * Arabic.
+ *
+ * The supplied brand has no Arabic direction at all — the design system readme
+ * says so outright: "No Arabic script appears in the supplied sources — if the
+ * brand needs an Arabic cut of the display face, that is an open request."
+ * Monigue is Latin-only (no Arabic in its cmap), so this pairing stands as a
+ * proposal:
+ *
+ *   Noto Kufi Arabic  → display headlines. Geometric and flat-sided, the
+ *                        closest Arabic gets to Monigue's poster register. No
+ *                        Arabic face is condensed the way a Latin gothic is;
+ *                        the script does not do it.
+ *   Cairo             → everything else. Even colour at UI and body sizes, and
+ *                        it holds up in a form field at 17px.
+ *
+ * Both are SIL Open Font License. Get them looked at by an Arabic-reading
+ * designer before the event.
+ */
+@font-face{font-family:"Noto Kufi Arabic";src:url("/fonts/NotoKufiArabic-Arabic.woff2") format("woff2");font-weight:400 900;font-style:normal;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFF}
+@font-face{font-family:"Cairo";src:url("/fonts/Cairo-Arabic.woff2") format("woff2");font-weight:200 1000;font-style:normal;font-display:swap;unicode-range:U+0600-06FF,U+0750-077F,U+08A0-08FF,U+FB50-FDFF,U+FE70-FEFF}

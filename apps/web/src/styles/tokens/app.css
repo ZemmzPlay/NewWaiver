@@ -1,0 +1,70 @@
+/**
+ * Waiver-system tokens.
+ *
+ * Every value here is an alias of a brand token from the design system. There
+ * are no new colours: a session state is a *role*, and the role is played by a
+ * colour the brand already owns.
+ *
+ * The pairings obey the design system's contrast rule — white on indigo, white
+ * on orange, indigo on yellow, indigo on pink. Sky and yellow never carry body
+ * type on white, so where a state needs to be calm it uses a tint as a ground
+ * and indigo as the ink.
+ */
+:root {
+  /* ---- session state ladder, coolest to hottest ---------------------- */
+  --state-active-ground: var(--sky-100);
+  --state-active-ink: var(--carnival-indigo);
+  --state-active-edge: var(--carnival-sky);
+
+  --state-warned-ground: var(--carnival-yellow);
+  --state-warned-ink: var(--carnival-indigo);
+  --state-warned-edge: var(--yellow-700);
+
+  --state-expired-ground: var(--orange-100);
+  --state-expired-ink: var(--carnival-indigo);
+  --state-expired-edge: var(--carnival-orange);
+
+  --state-overdue-ground: var(--carnival-orange);
+  --state-overdue-ink: var(--carnival-white);
+  --state-overdue-edge: var(--orange-700);
+
+  /* The PRD asks for red at escalation. The brand has no red, so the deepest
+     shade of the highest-energy colour carries it. It reads as red and it is
+     still a design-system value. */
+  --state-escalated-ground: var(--orange-700);
+  --state-escalated-ink: var(--carnival-white);
+  --state-escalated-edge: var(--indigo-900);
+
+  --state-done-ground: var(--ink-50);
+  --state-done-ink: var(--ink-500);
+  --state-done-edge: var(--ink-100);
+
+  /* ---- counter ergonomics -------------------------------------------- */
+  /* "big type, obvious state colours, no more than one decision per screen",
+     on day three, in a loud hall. Staff screens size up from these. */
+  --counter-tap-min: 56px;
+  --counter-row-height: 72px;
+  --counter-key-size: 88px;
+
+  /* Guardian's phone, one-handed, possibly holding a child. */
+  --phone-tap-min: 48px;
+  --phone-input-size: var(--font-size-md); /* 17px — never below 16 */
+
+  /* ---- the registration code ------------------------------------------ */
+  /* Six digits and a space at a fixed display size overflowed a 375px phone and
+     wrapped onto two lines, which is the worst thing that can happen to the one
+     string the whole system hangs on. It scales with the viewport and stops at
+     the top of the display scale on anything wide enough to hold it.
+     Monigue is condensed enough to take the larger ceiling. */
+  --code-size: clamp(var(--font-size-3xl), 17vw, var(--font-size-6xl));
+  /* One digit cell for TickingNumber. Monigue's widest figure is 0.407em, so
+     this clears it with a hair of separation and no more. */
+  --digit-cell: 0.44em;
+  --code-size-sm: clamp(var(--font-size-xl), 8vw, var(--font-size-2xl));
+
+  /* ---- surfaces ------------------------------------------------------- */
+  --surface-counter: var(--ink-50);
+  --surface-danger: var(--orange-100);
+  --text-danger: var(--orange-700);
+  --border-danger: var(--carnival-orange);
+}

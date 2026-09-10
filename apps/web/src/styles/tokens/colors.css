@@ -1,0 +1,84 @@
+:root{
+/* --- Core brand palette (sampled from Carnival Elements.pdf) --- */
+--carnival-indigo:#4154AC;
+--carnival-sky:#52A0D6;
+--carnival-orange:#FD7440;
+--carnival-orange-light:#FF7B4E;
+--carnival-yellow:#FFCB3D;
+--carnival-pink:#E2AFD5;
+--carnival-white:#FFFFFF;
+
+/* --- Tints & shades (derived, for hover/press/surface use only) --- */
+--indigo-900:#26326A;
+--indigo-700:#33428A;
+--indigo-500:#4154AC;
+--indigo-300:#8590CB;
+--indigo-100:#D9DDEF;
+--sky-700:#3A7BAA;
+--sky-500:#52A0D6;
+--sky-300:#93C4E5;
+--sky-100:#DDEDF7;
+--orange-700:#D95526;
+--orange-500:#FD7440;
+--orange-300:#FEAC8C;
+--orange-100:#FFE4D9;
+--yellow-700:#D9A616;
+--yellow-500:#FFCB3D;
+--yellow-300:#FFE08B;
+--yellow-100:#FFF5D8;
+--pink-700:#B97FA9;
+--pink-500:#E2AFD5;
+--pink-300:#EFCFE7;
+--pink-100:#F9EDF6;
+
+/* --- Neutrals --- */
+--ink-900:#151726;
+--ink-700:#33364A;
+--ink-500:#5C6076;
+--ink-300:#9CA0B3;
+--ink-200:#C9CCD8;
+--ink-100:#E6E8EF;
+--ink-50:#F4F5F9;
+
+/* --- Semantic surfaces --- */
+--surface-page:var(--carnival-white);
+--surface-page-alt:var(--ink-50);
+--surface-card:var(--carnival-white);
+--surface-inverse:var(--carnival-indigo);
+--surface-accent:var(--carnival-yellow);
+--surface-muted:var(--indigo-100);
+
+/* --- Semantic text --- */
+--text-heading:var(--carnival-indigo);
+--text-body:var(--ink-700);
+--text-muted:var(--ink-500);
+--text-on-inverse:var(--carnival-white);
+--text-on-accent:var(--carnival-indigo);
+--text-link:var(--carnival-indigo);
+--text-link-hover:var(--carnival-orange);
+
+/* --- Semantic interactive --- */
+--action-primary:var(--carnival-orange);
+--action-primary-hover:var(--orange-700);
+--action-primary-text:var(--carnival-white);
+--action-secondary:var(--carnival-indigo);
+--action-secondary-hover:var(--indigo-700);
+--action-secondary-text:var(--carnival-white);
+--action-accent:var(--carnival-yellow);
+--action-accent-hover:var(--yellow-700);
+--action-accent-text:var(--carnival-indigo);
+
+/* --- Borders --- */
+--border-subtle:var(--ink-100);
+--border-strong:var(--carnival-indigo);
+--border-accent:var(--carnival-yellow);
+
+/* --- Status --- */
+--status-live:var(--carnival-orange);
+--status-upcoming:var(--carnival-sky);
+--status-soldout:var(--ink-300);
+--status-featured:var(--carnival-yellow);
+
+/* --- Focus --- */
+--focus-ring:var(--carnival-sky);
+}
