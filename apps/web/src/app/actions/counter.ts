@@ -26,6 +26,7 @@ const MESSAGES: Record<string, string> = {
   WRONG_ZONE: 'That child is registered for a different zone. Check them in at the right counter.',
   ZONE_REQUIRED: 'Choose a zone on the PIN pad before checking anyone in.',
   CHILD_ALREADY_INSIDE: 'That child already has a session running. Check them out first.',
+  RECHECK_NOT_ALLOWED: 'That child already finished a session. Register again for another visit.',
   OVERRIDE_REQUIRED: 'Releasing to someone else needs a supervisor PIN.',
   BAD_SUPERVISOR_PIN: 'That is not a supervisor PIN.',
   SESSION_NOT_FOUND: 'That session is no longer on file. Refresh the board.',

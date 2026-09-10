@@ -1,10 +1,16 @@
 import type { NextConfig } from 'next';
+import { dirname, join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { loadRootEnv } from './load-root-env.mjs';
 
 loadRootEnv();
 
+const monorepoRoot = join(dirname(fileURLToPath(import.meta.url)), '../..');
+
 const config: NextConfig = {
   reactStrictMode: true,
+  // Stop Next picking a parent-folder lockfile as the workspace root.
+  outputFileTracingRoot: monorepoRoot,
   // Docker image on a t4g.small: ship the traced server, not node_modules.
   output: 'standalone',
   // The workspace packages ship TypeScript source, not a build step.

@@ -16,7 +16,9 @@ export function loadRootEnv() {
   for (let i = 0; i < 6; i += 1) {
     const candidate = join(dir, '.env');
     if (existsSync(join(dir, 'package-lock.json')) && existsSync(candidate)) {
-      for (const line of readFileSync(candidate, 'utf8').split('\n')) {
+      // Split on CRLF or LF — a trailing \r breaks `$` because `.` does not
+      // match line terminators, so Windows checkouts would load zero keys.
+      for (const line of readFileSync(candidate, 'utf8').split(/\r?\n/)) {
         const match = line.match(/^\s*([A-Z0-9_]+)\s*=\s*(.*)$/);
         if (!match) continue;
         const [, key, rawValue] = match;

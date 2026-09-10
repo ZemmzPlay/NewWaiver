@@ -71,6 +71,14 @@ export async function startSessions(
     const child = await db.child.findUnique({ where: { id: entry.childId } });
     if (!child || child.registrationId !== registration.id) throw new Error('CHILD_NOT_IN_REGISTRATION');
 
+    // One visit per child record. After release (checked_out), they must
+    // register again — never start a second clock on the same child.
+    const alreadyFinished = await db.session.findFirst({
+      where: { childId: child.id, status: 'checked_out' },
+      select: { id: true },
+    });
+    if (alreadyFinished) throw new Error('RECHECK_NOT_ALLOWED');
+
     const now = new Date();
     const schedule = sessionSchedule(now, pkg.minutes);
 

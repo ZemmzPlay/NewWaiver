@@ -20,7 +20,7 @@ export function CounterChrome({ zoneName, staffRole, children, active }: {
   zoneName: string;
   staffRole: string;
   children: ReactNode;
-  active: 'check-in' | 'board' | 'pickup' | 'overview' | 'admin';
+  active: 'check-in' | 'board' | 'pickup' | 'overview' | 'admin' | 'users';
 }) {
   const { t } = useLocale();
   const router = useRouter();
@@ -30,9 +30,10 @@ export function CounterChrome({ zoneName, staffRole, children, active }: {
     { key: 'check-in' as const, label: t.counter.checkIn, href: '/counter' },
     { key: 'board' as const, label: t.counter.board, href: '/counter/board' },
     { key: 'pickup' as const, label: t.counter.pickup, href: '/counter/pickup' },
-    // A counter staffer has three destinations and no more. These two appear
+    // A counter staffer has three destinations and no more. These appear
     // only for the people they are for.
     ...(supervisor ? [{ key: 'overview' as const, label: t.counter.overview, href: '/counter/overview' }] : []),
+    ...(supervisor ? [{ key: 'users' as const, label: t.counter.users, href: '/counter/users' }] : []),
     ...(supervisor ? [{ key: 'admin' as const, label: t.counter.staffAdmin, href: '/counter/admin' }] : []),
   ];
 

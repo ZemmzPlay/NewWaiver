@@ -22,6 +22,8 @@ export interface SearchHit {
   emailStatus: 'unknown' | 'delivered' | 'bounced' | 'complained';
   childNames: string[];
   liveSessions: number;
+  /** Children who finished a visit (checked out) and are not currently inside. */
+  releasedChildren: number;
   matchedOn: 'code' | 'phone' | 'guardian' | 'child';
 }
 
@@ -48,12 +50,25 @@ export async function search(query: string, limit = 12): Promise<SearchHit[]> {
       if (byId.has(row.id)) continue;
       const kids = await db.child.findMany({
         where: { registrationId: row.id },
-        select: { fullName: true },
+        select: {
+          fullName: true,
+          sessions: {
+            where: { status: { in: [...liveStatuses, 'checked_out'] } },
+            select: { status: true },
+          },
+        },
         orderBy: { seq: 'asc' },
       });
-      const live = await db.session.count({
-        where: { child: { registrationId: row.id }, status: { in: liveStatuses } },
-      });
+      let live = 0;
+      let released = 0;
+      for (const kid of kids) {
+        const hasLive = kid.sessions.some((s) => (liveStatuses as readonly string[]).includes(s.status));
+        if (hasLive) {
+          live += 1;
+          continue;
+        }
+        if (kid.sessions.some((s) => s.status === 'checked_out')) released += 1;
+      }
       byId.set(row.id, {
         registrationId: row.id,
         code: row.code,
@@ -62,6 +77,7 @@ export async function search(query: string, limit = 12): Promise<SearchHit[]> {
         emailStatus: row.guardian.emailStatus,
         childNames: kids.map((k) => k.fullName),
         liveSessions: live,
+        releasedChildren: released,
         matchedOn,
       });
     }
@@ -161,6 +177,11 @@ export interface FamilyChild {
     status: string;
     endsAt: Date;
   } | null;
+  /** Most recent staff check-out, when they are not currently inside. */
+  lastReleased: {
+    zoneName: string;
+    checkedOutAt: Date;
+  } | null;
 }
 
 export interface FamilyCard {
@@ -213,6 +234,18 @@ export async function familyCard(code: string): Promise<FamilyCard | null> {
       })
     : [];
 
+  const completed = kids.length
+    ? await db.session.findMany({
+        where: { childId: { in: kids.map((k) => k.id) }, status: 'checked_out' },
+        orderBy: { checkedOutAt: 'desc' },
+        select: {
+          childId: true,
+          checkedOutAt: true,
+          zone: { select: { name: true } },
+        },
+      })
+    : [];
+
   const [consent] = await db.$queryRaw<{ version: number }[]>(Prisma.sql`
     select wv.version
       from consents c
@@ -241,6 +274,7 @@ export async function familyCard(code: string): Promise<FamilyCard | null> {
     waiverVersion: consent?.version ?? null,
     children: kids.map((kid) => {
       const session = live.find((s) => s.childId === kid.id);
+      const done = completed.find((s) => s.childId === kid.id);
       return {
         id: kid.id,
         fullName: kid.fullName,
@@ -250,6 +284,9 @@ export async function familyCard(code: string): Promise<FamilyCard | null> {
         requestedPackageId: kid.requestedPackageId,
         liveSession: session
           ? { id: session.id, zoneId: session.zoneId, zoneName: session.zone.name, status: session.status, endsAt: session.endsAt }
+          : null,
+        lastReleased: !session && done?.checkedOutAt
+          ? { zoneName: done.zone.name, checkedOutAt: done.checkedOutAt }
           : null,
       };
     }),
