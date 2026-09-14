@@ -22,8 +22,9 @@ export function Field({ label, hint, error, children, id }: Common & { id?: stri
   );
 }
 
-export function TextField({ label, hint, error, className = '', ...rest }: Common & InputHTMLAttributes<HTMLInputElement>) {
-  const uid = useId();
+export function TextField({ label, hint, error, className = '', id, ...rest }: Common & InputHTMLAttributes<HTMLInputElement>) {
+  const auto = useId();
+  const uid = id ?? auto;
   return (
     <Field label={label} hint={hint} error={error} id={uid}>
       {/* className is merged, not replaced — a caller adding `numeric` must not

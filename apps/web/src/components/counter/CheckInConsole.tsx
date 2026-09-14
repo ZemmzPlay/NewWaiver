@@ -72,6 +72,7 @@ export function CheckInConsole({ zone, zones }: { zone: ZoneOption; zones: ZoneO
     const otherZoneNames = new Set<string>();
     let eligibleCount = 0;
     let liveInThisZone = 0;
+    let spentOnThisDesk = 0;
 
     for (const child of card.children) {
       const owner = zones.find((z) => z.packages.some((p) => p.id === child.requestedPackageId));
@@ -83,15 +84,29 @@ export function CheckInConsole({ zone, zones }: { zone: ZoneOption; zones: ZoneO
         continue;
       }
       if (owner?.id !== zone.id) continue;
+      // Finished a visit already — cannot start again on this child record.
+      if (child.lastReleased) {
+        spentOnThisDesk += 1;
+        continue;
+      }
       eligibleCount += 1;
       const requested = owner.packages.find((p) => p.id === child.requestedPackageId);
       const match = zone.packages.find((p) => p.minutes === requested?.minutes) ?? zone.packages[0];
       if (match) defaults[child.id] = match.id;
     }
 
-    // No child for this desk and nobody already inside here — send them to the
-    // right counter instead of opening an empty check-in card.
+    // Nobody left to check in at this desk.
     if (eligibleCount === 0 && liveInThisZone === 0) {
+      // Finished family: open the card with released status visible — do not
+      // vanish back to search with only a flash of error text.
+      if (spentOnThisDesk > 0) {
+        setFamily(card);
+        setHits([]);
+        setQuery('');
+        setRequestedZones(requestedZone);
+        setSelected({});
+        return;
+      }
       setFamily(null);
       setHits([]);
       setQuery('');
@@ -126,7 +141,11 @@ export function CheckInConsole({ zone, zones }: { zone: ZoneOption; zones: ZoneO
   async function start() {
     if (!family) return;
     const entries = Object.entries(selected)
-      .filter(([, packageId]) => Boolean(packageId) && zone.packages.some((p) => p.id === packageId))
+      .filter(([childId, packageId]) => {
+        if (!packageId || !zone.packages.some((p) => p.id === packageId)) return false;
+        const child = family.children.find((c) => c.id === childId);
+        return Boolean(child && !child.liveSession && !child.lastReleased);
+      })
       .map(([childId, packageId]) => ({
         childId, packageId, stubRef, clientUuid: crypto.randomUUID(),
       }));
@@ -206,6 +225,7 @@ export function CheckInConsole({ zone, zones }: { zone: ZoneOption; zones: ZoneO
   if (family) {
     const available = family.children.filter((child) => !child.liveSession);
     const chosen = Object.entries(selected).filter(([, id]) => Boolean(id));
+    const hasSpent = available.some((child) => child.lastReleased);
 
     return (
       <div className="p-6 max-w-[--container-page] mx-auto flex flex-col gap-5">
@@ -220,16 +240,42 @@ export function CheckInConsole({ zone, zones }: { zone: ZoneOption; zones: ZoneO
           <div className="flex flex-wrap gap-x-8 gap-y-2 mt-4 text-sm">
             <span><span className="eyebrow">{t.common.code}</span> <strong className="numeric">{formatRegistrationCode(family.code)}</strong></span>
             <span><span className="eyebrow">{t.common.mobile}</span> <strong className="numeric">{formatForDisplay(family.guardian.phoneE164)}</strong></span>
+            <span>
+              <span className="eyebrow">{t.common.email}</span>{' '}
+              <strong className="latin" style={{ overflowWrap: 'anywhere' }}>{family.guardian.email}</strong>
+            </span>
             <span><span className="eyebrow">{t.counter.relation}</span> <strong>{t.guardianStep.relations[family.guardian.relation as keyof typeof t.guardianStep.relations] ?? family.guardian.relation}</strong></span>
           </div>
 
           <div className="flex flex-wrap gap-2 mt-4">
-            <span className={`state ${family.waiverAccepted ? 'state-active' : 'state-overdue'}`}>
-              {family.waiverAccepted ? t.counter.waiverSigned(family.waiverVersion ?? 1) : t.counter.noWaiver}
-            </span>
-            <span className={`state ${family.guardian.emailStatus === 'bounced' || family.guardian.emailStatus === 'complained' ? 'state-overdue' : family.guardian.emailStatus === 'delivered' ? 'state-active' : 'state-warned'}`}>
-              {t.counter.emailStatus(family.guardian.emailStatus)}
-            </span>
+            {family.children.map((child) => {
+              const name = child.fullName.split(' ')[0]!;
+              if (child.liveSession) {
+                const finished = child.liveSession.status === 'expired' || child.liveSession.status === 'overdue';
+                return (
+                  <span key={child.id} className={`state ${finished ? 'state-expired' : 'state-active'}`}>
+                    {finished
+                      ? t.counter.childCompleted(name)
+                      : t.counter.childIn(name, child.liveSession.zoneName)}
+                  </span>
+                );
+              }
+              if (child.lastReleased) {
+                return (
+                  <span key={child.id} className="state state-checked_out">
+                    {t.counter.childReleased(name)}
+                  </span>
+                );
+              }
+              return (
+                <span key={child.id} className="state state-warned">
+                  {t.counter.childNotIn(name)}
+                </span>
+              );
+            })}
+            {!family.waiverAccepted ? (
+              <span className="state state-overdue">{t.counter.noWaiver}</span>
+            ) : null}
           </div>
 
           {!family.waiverAccepted ? (
@@ -258,29 +304,35 @@ export function CheckInConsole({ zone, zones }: { zone: ZoneOption; zones: ZoneO
           </div>
         ) : null}
 
+        {hasSpent ? (
+          <div className="notice notice-warn">{t.counter.recheckBlocked}</div>
+        ) : null}
+
         <div>
           <div className="eyebrow mb-3">{t.counter.whoIsGoingIn}</div>
           <div className="flex flex-col gap-3">
             {available.map((child) => {
               const belongsHere = childBelongsToDesk(child.requestedPackageId);
+              const spent = Boolean(child.lastReleased);
+              const canSelect = belongsHere && !spent;
               const active = Boolean(selected[child.id]);
               const otherZone = requestedZones[child.id];
               return (
                 <div
                   key={child.id}
-                  className={`card ${belongsHere ? '' : 'opacity-70'}`}
+                  className={`card ${canSelect ? '' : 'opacity-70'}`}
                   style={{
                     borderWidth: '2px',
                     borderColor: active ? 'var(--carnival-indigo)' : undefined,
                   }}
                 >
-                  <label className={`flex items-center gap-4 ${belongsHere ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
+                  <label className={`flex flex-wrap items-center gap-4 ${canSelect ? 'cursor-pointer' : 'cursor-not-allowed'}`}>
                     <input
                       type="checkbox"
                       checked={active}
-                      disabled={!belongsHere}
+                      disabled={!canSelect}
                       onChange={(event) => {
-                        if (!belongsHere) return;
+                        if (!canSelect) return;
                         setSelected((prev) => {
                           const next = { ...prev };
                           if (event.target.checked) next[child.id] = zone.packages[0]?.id ?? '';
@@ -292,10 +344,13 @@ export function CheckInConsole({ zone, zones }: { zone: ZoneOption; zones: ZoneO
                     />
                     <span className="headline" style={{ fontSize: 'var(--font-size-xl)' }}>{child.fullName}</span>
                     <span className="state state-active">{t.counter.age(child.ageYears)}</span>
+                    {spent ? (
+                      <span className="state state-checked_out">{t.counter.releasedNeedsRegistration}</span>
+                    ) : null}
                     {!belongsHere && otherZone ? (
                       <span className="state state-warned">{t.counter.wrongZoneChild(otherZone)}</span>
                     ) : null}
-                    {belongsHere && otherZone && otherZone !== zone.name ? (
+                    {belongsHere && !spent && otherZone && otherZone !== zone.name ? (
                       <span className="state state-warned">{t.counter.picked(otherZone)}</span>
                     ) : null}
                   </label>
@@ -307,7 +362,7 @@ export function CheckInConsole({ zone, zones }: { zone: ZoneOption; zones: ZoneO
                     </div>
                   ) : null}
 
-                  {active && belongsHere ? (
+                  {active && canSelect ? (
                     <div className="flex flex-wrap gap-2 mt-4">
                       {zone.packages.map((pkg) => (
                         <button
@@ -399,6 +454,12 @@ export function CheckInConsole({ zone, zones }: { zone: ZoneOption; zones: ZoneO
             </div>
             {hit.liveSessions > 0 ? (
               <span className="state state-warned mt-2">{t.counter.insideNow(hit.liveSessions)}</span>
+            ) : hit.releasedChildren > 0 && hit.releasedChildren === hit.childNames.length ? (
+              <span className="state state-checked_out mt-2">{t.counter.releasedNeedsRegistration}</span>
+            ) : hit.releasedChildren > 0 ? (
+              <span className="state state-checked_out mt-2">
+                {t.counter.searchReleased(hit.releasedChildren)}
+              </span>
             ) : null}
           </button>
         ))}
